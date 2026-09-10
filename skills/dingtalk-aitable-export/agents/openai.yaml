@@ -1,0 +1,6 @@
+interface:
+  display_name: "钉钉 AI 表格原样导出"
+  short_description: "先选表再原样下载单表 Excel，校验字段和样式，支持超时续跑与临时视图清理"
+  default_prompt: "使用 $dingtalk-aitable-export 读取我的 .env，列出排除测试表的表名和 tableId，等我选择后原样导出。"
+policy:
+  allow_implicit_invocation: true
