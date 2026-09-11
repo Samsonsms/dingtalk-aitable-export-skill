@@ -90,10 +90,24 @@ class ReleaseTests(unittest.TestCase):
             names = stream.namelist()
             self.assertIn("skills/dingtalk-aitable-export/SKILL.md", names)
             self.assertIn(".env.example", names)
+            self.assertIn("LICENSE", names)
             self.assertNotIn(".env", names)
             self.assertFalse(any(name.startswith(("output/", "tmp/", "tests/", "tools/")) for name in names))
-            self.assertNotIn(str(self.artifact), stream.read("TEST_REPORT.json").decode())
+            report = json.loads(stream.read("TEST_REPORT.json"))
+            serialized_report = json.dumps(report)
+            self.assertNotIn(str(self.artifact), serialized_report)
+            for private_key in ("file", "state", "sha256", "dataRows", "columns", "formulaValues",
+                                "referenceValues", "sourceErrorCount", "baseId", "tableId", "tableName",
+                                "identity", "profile"):
+                self.assertNotIn(private_key, serialized_report)
+            self.assertEqual(
+                report["checks"],
+                {"singleSheet": True, "fieldsPresent": True, "computedValuesCovered": True,
+                 "headerStyleVerified": True, "bytesUnchanged": True, "viewDeleted": True,
+                 "existingViewsUnchanged": True, "idempotentResume": True},
+            )
         self.assertTrue((package / "README.md").is_file())
+        self.assertTrue((package / "LICENSE").is_file())
         self.assertTrue(archive.with_suffix(".zip.sha256").exists())
 
     def test_released_version_cannot_be_overwritten(self):

@@ -11,7 +11,7 @@ SKILL_NAME = "dingtalk-aitable-export"
 SKILL = ROOT / "skills" / SKILL_NAME
 VERSION = "1.0.0"
 DIRECTORIES = ("skills", "tools", "tests", "docs")
-ROOT_FILES = ("README.md", "AGENTS.md", "CHANGELOG.md", ".env.example", ".gitignore")
+ROOT_FILES = ("README.md", "AGENTS.md", "CHANGELOG.md", "LICENSE", ".env.example", ".gitignore")
 
 
 def inventory(root=ROOT):

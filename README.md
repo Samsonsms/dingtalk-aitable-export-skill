@@ -183,3 +183,7 @@ dist/                             发布 ZIP 与校验码，不入库
 - [版本记录](CHANGELOG.md)
 
 项目没有配置自动远程发布或 Git push。官方 CLI 参考见 [DingTalk Workspace CLI](https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli)。
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE)，允许使用、复制、修改和分发，并需保留原版权及许可声明。

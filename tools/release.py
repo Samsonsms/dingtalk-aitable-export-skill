@@ -35,7 +35,7 @@ def gate(root=ROOT):
 def package_entries(root=ROOT):
     entries = {}
     for relative in inventory(root):
-        if relative.startswith(("skills/", "docs/")) or relative in ("README.md", "CHANGELOG.md", ".env.example"):
+        if relative.startswith(("skills/", "docs/")) or relative in ("README.md", "CHANGELOG.md", "LICENSE", ".env.example"):
             destination = relative
         else:
             continue
@@ -44,15 +44,35 @@ def package_entries(root=ROOT):
     return entries
 
 
+def public_test_report(root, offline, live):
+    checks = live["checks"]
+    return {
+        "version": VERSION,
+        "sourceDigest": source_digest(root),
+        "offlineTests": offline["testCount"],
+        "offlineTestedAt": offline["testedAt"],
+        "liveTestedAt": live["testedAt"],
+        "dwsVersion": live["dwsVersion"],
+        "checks": {
+            "singleSheet": checks["sheetCount"] == 1,
+            "fieldsPresent": checks["columns"] >= 1,
+            "computedValuesCovered": checks["formulaValues"] >= 1 and checks["referenceValues"] >= 1,
+            "headerStyleVerified": checks["headerFill"] is True and checks["headerBorders"] is True,
+            "bytesUnchanged": checks["bytesUnchanged"],
+            "viewDeleted": checks["viewDeleted"],
+            "existingViewsUnchanged": checks["existingViewsUnchanged"],
+            "idempotentResume": checks["idempotentResume"],
+        },
+    }
+
+
 def build(root=ROOT):
     offline, live = gate(root)
     destination = root / "dist" / f"{SKILL_NAME}-{VERSION}.zip"
     if destination.exists():
         raise ValueError("Release archive exists; do not overwrite a published version")
     entries = package_entries(root)
-    report = {"version": VERSION, "sourceDigest": source_digest(root), "offlineTests": offline["testCount"],
-              "offlineTestedAt": offline["testedAt"], "liveTestedAt": live["testedAt"],
-              "dwsVersion": live["dwsVersion"], "checks": live["checks"]}
+    report = public_test_report(root, offline, live)
     entries["TEST_REPORT.json"] = json.dumps(report, indent=2).encode()
     manifest = {"version": VERSION, "createdAt": datetime.now().astimezone().isoformat(),
                 "files": {name: hashlib.sha256(data).hexdigest() for name, data in entries.items()}}
