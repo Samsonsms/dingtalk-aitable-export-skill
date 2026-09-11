@@ -29,24 +29,14 @@
 
 ### 1. 安装技能
 
-从可信维护者取得以下两个文件：
+在 Codex 中使用内置的 `$skill-installer`，从这个 GitHub 仓库的技能目录安装：
 
 ```text
-dingtalk-aitable-export-1.0.0.zip
-dingtalk-aitable-export-1.0.0.zip.sha256
+使用 $skill-installer 安装：
+https://github.com/Samsonsms/dingtalk-aitable-export-skill/tree/codex/initial-release/skills/dingtalk-aitable-export
 ```
 
-仓库中的 `dist/` 是本地发布目录，不提交 Git。取得发布包后，在 PowerShell 中校验并安装：
-
-```powershell
-Get-FileHash -Algorithm SHA256 '.\dingtalk-aitable-export-1.0.0.zip'
-Get-Content '.\dingtalk-aitable-export-1.0.0.zip.sha256'
-Expand-Archive -LiteralPath '.\dingtalk-aitable-export-1.0.0.zip' -DestinationPath '.\dingtalk-export-release'
-Set-Location '.\dingtalk-export-release'
-python install.py
-```
-
-安装器会校验包内文件，不会覆盖已有的同名技能，也不会复制个人配置、登录态或业务数据。
+Skill Installer 会从 GitHub 获取指定目录并写入当前用户的 Codex skills 目录；如果已经存在同名技能会停止，不会覆盖现有版本。安装完成后开启新会话，让 Codex 重新加载技能列表。
 
 ### 2. 准备自己的 AI 表格 ID
 
