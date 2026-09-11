@@ -29,7 +29,15 @@
 
 ### 1. 安装技能
 
-在 Codex 中使用内置的 `$skill-installer`，从这个 GitHub 仓库的技能目录安装：
+仓库地址：
+
+```text
+https://github.com/Samsonsms/dingtalk-aitable-export-skill
+```
+
+需要安装的是仓库中的 `skills/dingtalk-aitable-export/` 子目录，不是整个仓库。以下提示词可以直接复制给对应 Agent。
+
+#### Codex
 
 ```text
 使用 $skill-installer 安装：
@@ -37,6 +45,35 @@ https://github.com/Samsonsms/dingtalk-aitable-export-skill/tree/codex/initial-re
 ```
 
 Skill Installer 会从 GitHub 获取指定目录并写入当前用户的 Codex skills 目录；如果已经存在同名技能会停止，不会覆盖现有版本。安装完成后开启新会话，让 Codex 重新加载技能列表。
+
+#### Claude Code
+
+```text
+请通过 Git 安装这个 Agent Skill：
+https://github.com/Samsonsms/dingtalk-aitable-export-skill/tree/codex/initial-release/skills/dingtalk-aitable-export
+
+只复制仓库中的 skills/dingtalk-aitable-export 目录到
+~/.claude/skills/dingtalk-aitable-export。
+如果目标目录已存在，停止并报告，不要覆盖。安装后检查目标目录下存在 SKILL.md。
+```
+
+Claude Code 的个人 Skill 目录是 `~/.claude/skills/<skill-name>/`，安装后可以通过 `/dingtalk-aitable-export` 显式调用。参见 [Claude Code Skills 文档](https://code.claude.com/docs/en/slash-commands)。
+
+#### DeepSeek Harness
+
+```text
+请通过 Git 安装这个 Agent Skill：
+https://github.com/Samsonsms/dingtalk-aitable-export-skill/tree/codex/initial-release/skills/dingtalk-aitable-export
+
+只复制仓库中的 skills/dingtalk-aitable-export 目录到
+~/.dsh/skills/dingtalk-aitable-export。
+不要使用 dsh plugin add；这是 Skill，不是 Plugin。
+如果目标目录已存在，停止并报告，不要覆盖。安装后检查目标目录下存在 SKILL.md。
+```
+
+DeepSeek Harness 也会发现 `~/.agents/skills/dingtalk-aitable-export/`，适合与其他兼容 Agent 共享同一份安装。参见 [DeepSeek Harness Skills 文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md)。
+
+> Claude Code 和 DeepSeek Harness 的说明只覆盖 Skill 文件结构与发现路径。当前版本的完整导出流程只在 Windows PowerShell 与 Codex 环境完成真实 CLI 冒烟测试。
 
 ### 2. 准备自己的 AI 表格 ID
 
