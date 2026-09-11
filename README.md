@@ -1,47 +1,156 @@
-# 钉钉 AI 表格原样导出 Skill
+# 钉钉 AI 表格单表原样导出
 
-把“先列出表，等我选择，再下载单张原生 Excel”变成可分发技能。使用官方 DWS CLI 和临时全字段 Grid 视图，保留钉钉生成的文件字节，不通过 REST API 拉记录重拼 Excel。
+从一个钉钉 AI 表格库中列出可导出的表，等你选定后，将其中一张表下载为钉钉官方生成的 Excel。
 
-版本：**1.0.0**。支持 **Windows PowerShell、Python 3.12+、Node.js/npm、官方 DWS、curl.exe**。脚本只使用 Python 标准库，无须第三方 Python 包。实测 DWS 版本和测试结果以 ZIP 内 `TEST_REPORT.json` 为准。
+- 先展示候选清单，不默认选择第一张表
+- 每次只导出一张表，不下载整个 Base
+- 不修改原表、业务数据或已有视图
+- 保留官方导出的表头及公式、引用字段的计算结果
+- 支持超时续跑，并精确清理本次创建的临时视图
 
-## 快速使用
+> 当前版本：**1.0.0**。支持 Windows 10/11 PowerShell、Python 3.12+、Node.js/npm、官方 DWS CLI 和 `curl.exe`。
 
-1. 获取维护者测试通过的 ZIP 与 `.zip.sha256`，核对校验码后解压。
-2. 在解压目录运行 `python install.py`；安装到当前用户的 Codex skills，已有同名技能时停止。
-3. 在实际数据工作目录准备 `.env`，填写自己的 `DINGTALK_BASE_ID`。
-4. 用自己的钉钉账号完成 `dws auth login --device --recommend`。
-5. 在能识别该技能的新会话中输入：
+## 适用范围
 
-   ```text
-   使用 $dingtalk-aitable-export，读取当前工作目录的 .env，
-   列出排除测试表的表名和 tableId，等我选择后原样导出。
-   ```
+适合：
 
-完整步骤见 [安装与运行手册](skills/dingtalk-aitable-export/references/usage.md)，超时/失败见 [故障恢复](skills/dingtalk-aitable-export/references/recovery.md)。
+- 下载钉钉 AI 表格库中的一张指定表
+- 归档钉钉官方生成的原生 `.xlsx` 文件
+- 需要明确选表、结果校验和失败恢复的自动化流程
 
-## 输出与边界
+不适合：
 
-- 单表 `.xlsx` 放在工作目录 `output/dingtalk_exports/<时间_随机后缀>/`，每次主动重新导出保留历史文件。
-- 同目录 `state.json` 记录任务、账号范围和校验结果，支持恢复；它含本地业务元信息，不应分发。
-- 检查单 Sheet/名称、全字段及顺序、表头底色和四边框、原字节摘要；报告公式/引用计算值及源错误。
-- 下载后删除本次临时视图，不修改原表或已有视图。
+- 导出整个 Base 或批量导出多张表
+- 修改表格、字段、记录或已有视图
+- 查询记录后重新拼装 Excel
+- 复制已有视图的全部视觉配置
 
-“原样”指官方导出文件本身。临时视图使用默认样式，不承诺复制已有视图的自定义列宽、条件格式或筛选。公式/引用字段导出的是计算结果快照；空值和源错误不修补。
+## 快速开始
 
-每个人使用自己的登录态，baseId 不提供授权。目录可见、记录可读、建视图和导出分别受服务端权限控制；隐藏/筛选不等于权限隔离。没有创建视图权限时停止，不降级整库导出。见 [权限与数据保护](docs/security.md)。
+### 1. 安装技能
 
-## 维护入口
+从可信维护者取得以下两个文件：
+
+```text
+dingtalk-aitable-export-1.0.0.zip
+dingtalk-aitable-export-1.0.0.zip.sha256
+```
+
+仓库中的 `dist/` 是本地发布目录，不提交 Git。取得发布包后，在 PowerShell 中校验并安装：
+
+```powershell
+Get-FileHash -Algorithm SHA256 '.\dingtalk-aitable-export-1.0.0.zip'
+Get-Content '.\dingtalk-aitable-export-1.0.0.zip.sha256'
+Expand-Archive -LiteralPath '.\dingtalk-aitable-export-1.0.0.zip' -DestinationPath '.\dingtalk-export-release'
+Set-Location '.\dingtalk-export-release'
+python install.py
+```
+
+安装器会校验包内文件，不会覆盖已有的同名技能，也不会复制个人配置、登录态或业务数据。
+
+### 2. 准备自己的 AI 表格 ID
+
+在实际处理数据的工作目录中创建 `.env`：
+
+```dotenv
+DINGTALK_BASE_ID=YOUR_BASE_ID
+```
+
+`baseId` 只用于定位目标 AI 表格库，不会授予额外权限。请使用自己的 Base ID，不要把 Token 写入 `.env`。
+
+### 3. 登录官方 DWS
+
+```powershell
+dws auth status --format json
+dws auth login --device --recommend
+```
+
+使用你自己的钉钉账号完成设备授权。技能不会替你批准授权，也不会切换账号绕过权限。
+
+### 4. 调用技能
+
+打开能识别该技能的新会话，然后输入：
+
+```text
+使用 $dingtalk-aitable-export，读取当前工作目录的 .env，
+列出排除测试表的表名和 tableId，等我选择后只导出那一张表。
+```
+
+技能会先返回候选清单并停止。回复一个精确表名或 `tableId` 后，才会开始导出。
+
+完整参数和手动命令见[安装与运行手册](skills/dingtalk-aitable-export/references/usage.md)，超时或失败处理见[故障恢复](skills/dingtalk-aitable-export/references/recovery.md)。
+
+## 导出过程中会发生什么
+
+```text
+读取 Base ID 和当前登录身份
+        ↓
+列出候选表，等待你选择
+        ↓
+为选定表创建一个临时全字段 Grid 视图
+        ↓
+通过官方 DWS 提交单表导出并下载 Excel
+        ↓
+校验文件并删除本次临时视图
+```
+
+临时视图只在选表后创建。技能只删除状态文件中记录的本次 `viewId`，不会按名称批量删除视图。
+
+## “原样”是什么意思
+
+“原样”表示保留钉钉官方导出文件的原始字节，不通过 REST API 查询记录后重建、重算或重新保存 Excel。
+
+技能会检查：
+
+- 只有一个 Sheet，且 Sheet 名与所选表一致
+- 字段完整、顺序一致
+- 表头包含底色和四边框
+- 下载文件的 SHA256 在处理过程中未变化
+- 公式和引用字段的计算结果及源错误得到如实报告
+
+“原样”不表示复制某个已有视图的全部外观。临时视图使用默认样式，不承诺保留已有视图的自定义列宽、条件格式或筛选配置。公式和引用字段导出的是当前计算结果快照，不承诺在 Excel 中继续使用钉钉公式重算。
+
+## 输出与恢复
+
+每次主动导出会创建独立目录：
+
+```text
+output/dingtalk_exports/<时间_随机后缀>/
+├── <表名>.xlsx
+└── state.json
+```
+
+`state.json` 保存账号范围、表、任务和校验状态，用于安全续跑。它包含本地业务元信息，不应提交或分发。
+
+只有返回 `status=complete` 才代表导出、校验和临时视图清理全部完成。超时返回 `status=pending` 时，应使用原状态文件继续轮询同一个任务，不能重新创建视图或重复提交导出。
+
+## 权限与数据保护
+
+- 每个人使用自己的 DWS 登录态和服务端权限
+- 目录可见不代表拥有全部记录、建视图或导出权限
+- 隐藏和筛选不是权限隔离
+- 没有创建视图权限时停止，不改用管理员账号或整库导出
+- `.env`、状态文件、导出文件、账号信息和下载签名 URL 不进入发布包
+
+详细说明见[权限与数据保护](docs/security.md)。
+
+## 开发与维护
 
 ```text
 skills/dingtalk-aitable-export/   可安装技能本体
-tests/                          合成数据离线测试
-tools/                          测试、真实冒烟、发布与安装工具
-docs/                           维护、安全与验收说明
-tmp/                            本地测试证据，不入库
-output/                         真实导出文件，不入库
-dist/                           发布 ZIP 与校验码，不入库
+tests/                            合成数据离线测试
+tools/                            检查、真实冒烟、发布和安装工具
+docs/                             维护、安全与验收说明
+tmp/                              本地测试证据，不入库
+output/                           真实导出文件，不入库
+dist/                             发布 ZIP 与校验码，不入库
 ```
 
-阅读 [维护与发布](docs/maintenance.md)、[测试与验收](docs/testing.md)、[版本记录](CHANGELOG.md)。分发包用于运行；维护源码和测试在 Git 仓库中。没有配置自动远程发布或 Git push。
+维护者应阅读：
 
-参考：[原手册与实现选择](docs/source-and-decisions.md)、[官方 DWS 项目](https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli)。
+- [维护与发布](docs/maintenance.md)
+- [测试与验收](docs/testing.md)
+- [实现依据与选择](docs/source-and-decisions.md)
+- [版本记录](CHANGELOG.md)
+
+项目没有配置自动远程发布或 Git push。官方 CLI 参考见 [DingTalk Workspace CLI](https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli)。
