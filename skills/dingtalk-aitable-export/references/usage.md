@@ -39,13 +39,13 @@ python install.py --destination 'C:\your-skills\dingtalk-aitable-export'
 
 ## 配置自己的 Base
 
-在实际操作的工作目录建立 `.env`，将占位符改成自己的 AI 表格文档 ID：
+打开目标钉钉多维表，点击右上角菜单，进入“表格文档详情” → “基本信息”，复制“文档ID”。然后在实际操作的工作目录建立 `.env`：
 
 ```dotenv
 DINGTALK_BASE_ID=YOUR_BASE_ID
 ```
 
-兼容 `baseId=...`。两键同时存在必须一致，同名键重复会停止。支持引号、UTF-8 BOM 和行尾注释。不要写入 Token。无法确定 ID 时向表格拥有者确认，不能随便借用其他项目配置。
+填写文档 ID，不要填写文档链接。兼容 `baseId=...`。两键同时存在必须一致，同名键重复会停止。支持引号、UTF-8 BOM 和行尾注释。不要写入 Token。无法查看文档详情时向表格拥有者确认，不能借用其他项目配置。
 
 ## 本人登录
 

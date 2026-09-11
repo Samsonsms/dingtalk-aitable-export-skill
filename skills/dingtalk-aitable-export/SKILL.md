@@ -9,7 +9,7 @@ description: 通过钉钉官方 DWS CLI 将用户选中的一张 AI 表格原样
 
 ## 正常流程
 
-1. 先检查工作区规则和 Git 状态。找用户指定 `.env` 的 `DINGTALK_BASE_ID`（兼容 `baseId`）；只读此键，不显示其他配置。缺失或冲突时询问路径/ID。不要搜索并借用他人的配置。
+1. 先检查工作区规则和 Git 状态。找用户指定 `.env` 的 `DINGTALK_BASE_ID`（兼容 `baseId`）；只读此键，不显示其他配置。没有 `.env` 或 ID 时，提示用户从目标多维表右上角菜单进入“表格文档详情” → “基本信息”，复制“文档ID”后创建 `.env`；不要把文档链接当作 ID，也不要搜索并借用他人的配置。配置冲突时停止并询问。
 2. 检查 `dws` 和 `curl.exe`；未安装时执行 `npm install -g dingtalk-workspace-cli`。运行 `dws auth status --format json`。未登录用 `dws auth login --device --recommend`，把真实授权链接交给用户完成，不能代替用户批准。有组织/账号歧义时先选明确账号；不可自动换账号。授权、版本兼容见 [运行手册](references/usage.md)。
 3. 用脚本列出表名和 tableId，保存候选清单。默认排除含“测试”的表：
    ```powershell

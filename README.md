@@ -79,13 +79,18 @@ DeepSeek Harness 也会发现 `~/.agents/skills/dingtalk-aitable-export/`，适�
 
 ### 2. 准备自己的 AI 表格 ID
 
-在实际处理数据的工作目录中创建 `.env`：
+获取 `baseId`：
+
+1. 打开要导出的钉钉多维表。
+2. 点击右上角菜单，选择“表格文档详情”。
+3. 在“基本信息”中找到“文档ID”，点击复制。
+4. 在实际处理数据的工作目录中创建 `.env`，填入复制的文档 ID：
 
 ```dotenv
 DINGTALK_BASE_ID=YOUR_BASE_ID
 ```
 
-`baseId` 只用于定位目标 AI 表格库，不会授予额外权限。请使用自己的 Base ID，不要把 Token 写入 `.env`。
+这里填写的是“文档ID”，不是“文档链接”。`baseId` 只用于定位目标 AI 表格库，不会授予额外权限，也不要把 Token 写入 `.env`。
 
 ### 3. 登录官方 DWS
 
